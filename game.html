@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>躲避方块小游戏</title>
+<style>
+body {
+    margin: 0;
+    background: #111;
+    overflow: hidden;
+}
+canvas {
+    display: block;
+    margin: auto;
+    background: #222;
+}
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = 500;
+canvas.height = 600;
+
+let player = {
+    x: 220,
+    y: 550,
+    size: 40,
+    speed: 6
+};
+
+let enemies = [];
+let score = 0;
+let gameOver = false;
+
+function spawnEnemy() {
+    enemies.push({
+        x: Math.random() * (canvas.width - 40),
+        y: -40,
+        size: 40,
+        speed: 3 + Math.random() * 3
+    });
+}
+
+function update() {
+    if (gameOver) return;
+
+    enemies.forEach(enemy => {
+        enemy.y += enemy.speed;
+
+        // 碰撞检测
+        if (
+            player.x < enemy.x + enemy.size &&
+            player.x + player.size > enemy.x &&
+            player.y < enemy.y + enemy.size &&
+            player.y + player.size > enemy.y
+        ) {
+            gameOver = true;
+        }
+    });
+
+    enemies = enemies.filter(e => e.y < canvas.height);
+    score++;
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 玩家
+    ctx.fillStyle = "blue";
+    ctx.fillRect(player.x, player.y, player.size, player.size);
+
+    // 敌人
+    ctx.fillStyle = "red";
+    enemies.forEach(enemy => {
+        ctx.fillRect(enemy.x, enemy.y, enemy.size, enemy.size);
+    });
+
+    // 分数
+    ctx.fillStyle = "white";
+    ctx.font = "20px Arial";
+    ctx.fillText("Score: " + score, 10, 30);
+
+    if (gameOver) {
+        ctx.font = "40px Arial";
+        ctx.fillText("GAME OVER", 130, 300);
+    }
+}
+
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+document.addEventListener("keydown", function(e) {
+    if (e.key === "ArrowLeft" && player.x > 0)
+        player.x -= player.speed;
+    if (e.key === "ArrowRight" && player.x < canvas.width - player.size)
+        player.x += player.speed;
+});
+
+setInterval(spawnEnemy, 800);
+
+gameLoop();
+</script>
+
+</body>
+</html>
